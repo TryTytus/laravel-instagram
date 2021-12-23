@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Likes;
 use App\Models\Posts;
+use App\Models\Profile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,13 +46,17 @@ class PostCotroller extends Controller
             $file = $request -> file('img') -> store('public');
             $post = new Posts();
             $user = Auth::user();
-    
             $post->nickname = $user['nickname'];
             $post->img = pathinfo($file)['basename'];
             $post->likes = 0;
             $post->title = request('title');
-    
+
             $post->save();
+
+            Profile::where(
+                'user_id', '=', $user["id"]
+            )->increment('post_num');
+
             return redirect('/');
         }
         catch (\Exception $e) {
@@ -61,6 +66,14 @@ class PostCotroller extends Controller
     public function getById($id) {
         $post = Posts::find($id);
         return $post;
+    }
+    public function getByIdWithComments($id) {
+        $post = Posts::with('commets.user')->find($id);
+        $isliked = Likes::where([
+            ['user_id', '=', Auth::user()->id],
+            ['post_id', '=', $id]
+        ])->count();
+        return view('post_view', ['post'=>$post, 'isliked' => $isliked]);
     }
 
     public function likeById($id) {
@@ -83,7 +96,7 @@ class PostCotroller extends Controller
         update(['likes' => $likes + 1]);
 
         $addToTable = new Likes();
-        
+
         $addToTable->post_id = $id;
         $addToTable->user_id = Auth::user()['id'];
 
@@ -107,19 +120,21 @@ class PostCotroller extends Controller
                 $likes = Posts::select('likes')
                 ->where('id', $id)->get();
                 $likes = $likes[0]['likes'];
-        
+
                 $update = Posts::where('id', $id)->
                 update(['likes' => $likes - 1]);
-        
+
                 $delete = Likes::where([
                     ['post_id','=', $id],
                     ['user_id','=', Auth::user()['id']]
                 ]);
 
                 $delete->delete();
-                
+
                 return $delete->count();
             }
 
-        
+    public function galleryPosts() {
+            return view('gallery', ['posts' => Posts::all()]);
+    }
 }

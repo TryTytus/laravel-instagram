@@ -44,9 +44,10 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'nickname' => $request->nickname,
+            'avatar' => null,
             'password' => Hash::make($request->password),
         ]);
-
+        
         $profile = new Profile();
             $profile->post_num = 0;
             $profile->observed_num = 0;
@@ -59,6 +60,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        return redirect('/');
     }
 }

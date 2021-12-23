@@ -12,21 +12,27 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-
-    public function observed() {
-        return $this->hasMany(Observed::class);
-    }
-
     public function profile() {
         return $this->hasOne(Profile::class);
     }
 
     public function posts() {
-        return $this->hasMany(Posts::class);
+        return $this->hasMany(Posts::class, 'nickname', 'nickname');
     }    
     public function likes() {
         return $this->hasMany(Likes::class);
     }
+
+    public function chatsf() {
+        return $this->hasMany(Chats::class, 'first_user_id', 'id');
+    }
+    public function chatsl() {
+        return $this->hasMany(Chats::class, 'last_user_id', 'id');
+    }
+    public function commets() {
+        return $this->hasMany(Comment::class, 'post_id', 'id');
+    }
+
 
     /**
      * The attributes that are mass assignable.

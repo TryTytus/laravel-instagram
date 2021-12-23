@@ -17,7 +17,9 @@
      }" id="{{ $post->id }}" class="p-4 bg-gray-100">
     <div class="max-w-xl bg-white border rounded-sm">
         <div class="flex items-center px-4 py-3">
-            <img class="w-8 h-8 rounded-full" src="./storage/avatar.jpg" />
+            <a href="/profile/{{ $post->nickname }}">
+                <img class="w-8 h-8 rounded-full" src="./storage/avatar.jpg" />
+            </a>
             <div class="ml-3 ">
                 <span class="block text-sm antialiased font-semibold leading-tight">
                     {{ $post->nickname }}
@@ -26,11 +28,10 @@
             </div>
         </div>
         <div>
-            <button  id="postt" ondblclick="document.querySelector('#like{{ $post->id }}').click() ">
-            <svg class="absolute text-white opacity-0 fill-current" id="icon{{ $post->id }}">
-                <use xlink:href="#icon-heart"></use>
-            </svg>
-
+            <button id="postt" ondblclick="document.querySelector('#like{{ $post->id }}').click() ">
+                <svg class="absolute text-white opacity-0 fill-current" id="icon{{ $post->id }}">
+                    <use xlink:href="#icon-heart"></use>
+                </svg>
                 <img class="select-none" src="<?= '/storage/' . $post->img ?>" />
             </button>
         </div>
@@ -48,26 +49,31 @@
                 </template>
 
                 <template x-if="isliked">
-                    <button @click="toggle(isliked, {{ $post->id }}); isliked = !isliked; likeimg($el, isliked); likes--"
+                    <button
+                        @click="toggle(isliked, {{ $post->id }}); isliked = !isliked; likeimg($el, isliked); likes--"
                         x-show="isliked">
-                        <svg id="like{{ $post->id }}" aria-label="Nie lubię" color="#ed4956" fill="#ed4956" height="24"
-                            role="img" viewBox="0 0 48 48" width="24">
+                        <svg id="like{{ $post->id }}" aria-label="Nie lubię" color="#ed4956" fill="#ed4956"
+                            height="24" role="img" viewBox="0 0 48 48" width="24">
                             <path
                                 d="M34.6 3.1c-4.5 0-7.9 1.8-10.6 5.6-2.7-3.7-6.1-5.5-10.6-5.5C6 3.1 0 9.6 0 17.6c0 7.3 5.4 12 10.6 16.5.6.5 1.3 1.1 1.9 1.7l2.3 2c4.4 3.9 6.6 5.9 7.6 6.5.5.3 1.1.5 1.6.5s1.1-.2 1.6-.5c1-.6 2.8-2.2 7.8-6.8l2-1.8c.7-.6 1.3-1.2 2-1.7C42.7 29.6 48 25 48 17.6c0-8-6-14.5-13.4-14.5z">
                             </path>
                         </svg>
-                    </button>   
+                    </button>
                 </template>
+                <a href="/thispost/{{ $post->id }}">
                 <svg fill="#262626" height="24" viewBox="0 0 48 48" width="24">
                     <path clip-rule="evenodd"
                         d="M47.5 46.1l-2.8-11c1.8-3.3 2.8-7.1 2.8-11.1C47.5 11 37 .5 24 .5S.5 11 .5 24 11 47.5 24 47.5c4 0 7.8-1 11.1-2.8l11 2.8c.8.2 1.6-.6 1.4-1.4zm-3-22.1c0 4-1 7-2.6 10-.2.4-.3.9-.2 1.4l2.1 8.4-8.3-2.1c-.5-.1-1-.1-1.4.2-1.8 1-5.2 2.6-10 2.6-11.4 0-20.6-9.2-20.6-20.5S12.7 3.5 24 3.5 44.5 12.7 44.5 24z"
                         fill-rule="evenodd"></path>
                 </svg>
-                <svg fill="#262626" height="24" viewBox="0 0 48 48" width="24">
-                    <path
-                        d="M47.8 3.8c-.3-.5-.8-.8-1.3-.8h-45C.9 3.1.3 3.5.1 4S0 5.2.4 5.7l15.9 15.6 5.5 22.6c.1.6.6 1 1.2 1.1h.2c.5 0 1-.3 1.3-.7l23.2-39c.4-.4.4-1 .1-1.5zM5.2 6.1h35.5L18 18.7 5.2 6.1zm18.7 33.6l-4.4-18.4L42.4 8.6 23.9 39.7z">
-                    </path>
-                </svg>
+                </a>
+                <a href="/sendmes/{{ $post->nickname }}">
+                    <svg fill="#262626" height="24" viewBox="0 0 48 48" width="24">
+                        <path
+                            d="M47.8 3.8c-.3-.5-.8-.8-1.3-.8h-45C.9 3.1.3 3.5.1 4S0 5.2.4 5.7l15.9 15.6 5.5 22.6c.1.6.6 1 1.2 1.1h.2c.5 0 1-.3 1.3-.7l23.2-39c.4-.4.4-1 .1-1.5zM5.2 6.1h35.5L18 18.7 5.2 6.1zm18.7 33.6l-4.4-18.4L42.4 8.6 23.9 39.7z">
+                        </path>
+                    </svg>
+                </a>
             </div>
             <div class="flex">
                 <svg fill="#262626" height="24" viewBox="0 0 48 48" width="24">
@@ -82,6 +88,14 @@
             <p class="font-sans">{{ $post->title }}</p>
         </div>
         <div class="mx-4 mb-4 text-sm font-semibold" x-text="likes + ' likes'"></div>
+        <form method="POST" action="/comment/{{ $post->id }}" class="-my-1 border-t border-gray-200 flex">
+            @csrf
+            <textarea id="textarea" placeholder="Dodaj komentarz..." rows="1"
+                class="w-5/6 text-sm py-4 px-3 bg-transparent resize-none border-0" name="body"></textarea>
+            <button type="submit" class="m-auto font-medium text-sm text-blue-400">
+                Opublikuj
+            </button>
+        </form>
     </div>
 </div>
 
@@ -145,13 +159,20 @@
     .likean {
         animation: 2s like-heart-animation ease-in-out forwards;
     }
+
     #postt {
-  margin: auto;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
+        margin: auto;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    #textarea:focus {
+        outline: none !important;
+        border: 0px;
+        box-shadow: 0 0 20px #ffffff;
+    }
 
 </style>

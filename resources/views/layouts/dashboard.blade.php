@@ -8,10 +8,13 @@
     <title>Document</title>
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-
+    <script src="https://js.pusher.com/7.0/pusher.min.js"></script>
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
-
+    <script
+    src="https://code.jquery.com/jquery-3.6.0.js"
+    integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+    crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
