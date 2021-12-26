@@ -5,7 +5,10 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostCotroller;
 use App\Http\Controllers\LikesController;
 use App\Http\Controllers\MessagesController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ObserverController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use App\Models\Posts;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,11 +31,15 @@ Route::get(
 )->middleware(['auth']);
 
 
-Route::view(
+Route::get(
     '/create',
-    'create_post',
-    ['error' => false]
-)->middleware(['auth']);
+    function() {
+        return view('create_post',
+    [
+        'error' => false,
+        'notifications' => NotificationController::getAll()
+    ]);
+})->middleware(['auth']);
 
 Route::post(
     '/create',
@@ -54,39 +61,76 @@ Route::get(
     [LikesController::class, 'status']
 )->middleware(['auth']);
 
-Route::view('/messages', 'messages'
+Route::view(
+    '/messages',
+    'messages'
 )->middleware(['auth']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-Route::get('/chats', [ChatsController::class, 'getAll']
+Route::get(
+    '/chats',
+    [ChatsController::class, 'getAll']
 )->middleware(['auth']);
 
-Route::get('/chats/{id}', [ChatsController::class, 'index']
-)->middleware(['auth']);
-
-
-Route::post('/send', [MessagesController::class, 'store']
-)->middleware(['auth']);
-
-Route::get('/create_chat/{id}', [ChatsController::class, 'createChat']
+Route::get(
+    '/chats/{id}',
+    [ChatsController::class, 'index']
 )->middleware(['auth']);
 
 
-Route::get('/profile/{nickname}', [ProfileController::class, 'index']
+Route::post(
+    '/send',
+    [MessagesController::class, 'store']
 )->middleware(['auth']);
 
-Route::get('/gallery', [PostCotroller::class, 'galleryPosts']
+Route::get(
+    '/create_chat/{id}',
+    [ChatsController::class, 'createChat']
 )->middleware(['auth']);
 
-Route::get('/sendmes/{nickname}', [ChatsController::class, 'findByNick']
+
+Route::get(
+    '/profile/{nickname}',
+    [ProfileController::class, 'index']
+)->middleware(['auth']);
+
+Route::get(
+    '/gallery',
+    [PostCotroller::class, 'galleryPosts']
+)->middleware(['auth']);
+
+Route::get(
+    '/sendmes/{nickname}',
+    [ChatsController::class, 'findByNick']
 )->middleware(['auth']);
 
 Route::get('thispost/{id}', [PostCotroller::class, 'getByIdWithComments']);
 
-Route::post('comment/{post_id}', [CommentController::class, 'create']
+Route::post(
+    'comment/{post_id}',
+    [CommentController::class, 'create']
+)->middleware(['auth']);
+
+Route::get(
+    'follow/{follow}',
+    [ObserverController::class, 'store']
+)->middleware(['auth']);
+
+Route::get(
+    'unfollow/{unfollow}',
+    [ObserverController::class, 'delete']
+)->middleware(['auth']);
+
+Route::get(
+    'notifications',
+    [NotificationController::class, 'getAll']
+)->middleware(['auth']);
+
+
+Route::post('changeavatar', [UserController::class, 'changeAvatar']
 )->middleware(['auth']);
 
 require __DIR__ . '/auth.php';

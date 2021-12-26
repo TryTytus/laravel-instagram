@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Likes;
+use App\Models\Notification;
 use App\Models\Posts;
 use App\Models\Profile;
 use Illuminate\Http\Request;
@@ -11,39 +12,55 @@ use Illuminate\Support\Facades\DB;
 
 class PostCotroller extends Controller
 {
-    public function getAll() {
-        $posts = DB::select(DB::raw("
-        SELECT
-        a.id,
-        a.nickname,
-        a.img,
-        a.likes,
-        a.title,
-        a.title,
+    public function getAll()
+    {
+    //     $posts = DB::select(DB::raw("
+    //     SELECT
+    //     a.id,
+    //     a.nickname,
+    //     a.img,
+    //     a.likes,
+    //     a.title,
+    //     (
+    //         CASE WHEN a.id IN(
+    //         SELECT DISTINCT
+    //             i.id
+    //         FROM
+    //             posts AS i
+    //         INNER JOIN likes ON i.id = likes.post_id AND likes.user_id = " . Auth::user()->id . "
+    //     ) THEN TRUE ELSE FALSE
+    //     END
+    // ) AS isliked
+    // FROM
+    //     posts AS a
+    // ORDER BY
+    //     a.id
+    // DESC
+    //     ;
+    //     "));
+
+        $posts = Posts::select()->addSelect(DB::raw("
         (
-            CASE WHEN a.id IN(
+            CASE WHEN posts.id IN(
             SELECT DISTINCT
                 i.id
             FROM
                 posts AS i
-            INNER JOIN likes ON i.id = likes.post_id AND likes.user_id = ".Auth::user()->id."
+            INNER JOIN likes ON i.id = likes.post_id AND likes.user_id = " . Auth::user()->id . "
         ) THEN TRUE ELSE FALSE
         END
-    ) AS isliked
-    FROM
-        posts AS a
-    ORDER BY
-        a.id
-    DESC
-        ;
-        "));
-       //return $posts;
-       return view('home', ['posts' => $posts]);
+        ) AS isliked
+        "))->with('user')->orderBy('id', 'desc')->get();
+
+        $notifications = NotificationController::getAll();
+        //return $posts;
+        return view('home', ['posts' => $posts, 'notifications' => $notifications]);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         try {
-            $file = $request -> file('img') -> store('public');
+            $file = $request->file('img')->store('public');
             $post = new Posts();
             $user = Auth::user();
             $post->nickname = $user['nickname'];
@@ -54,46 +71,51 @@ class PostCotroller extends Controller
             $post->save();
 
             Profile::where(
-                'user_id', '=', $user["id"]
+                'user_id',
+                '=',
+                $user["id"]
             )->increment('post_num');
 
+            NotificationController::store($post->id, 'newpost');
+
             return redirect('/');
-        }
-        catch (\Exception $e) {
-            return view('create_post', ['error' => $e]);
+        } catch (\Exception $e) {
+            return view('create_post', ['error' => $e, 'notifications' => NotificationController::getAll()]);
         }
     }
-    public function getById($id) {
+    public function getById($id)
+    {
         $post = Posts::find($id);
         return $post;
     }
-    public function getByIdWithComments($id) {
+    public function getByIdWithComments($id)
+    {
         $post = Posts::with('commets.user')->find($id);
         $isliked = Likes::where([
             ['user_id', '=', Auth::user()->id],
             ['post_id', '=', $id]
         ])->count();
-        return view('post_view', ['post'=>$post, 'isliked' => $isliked]);
+        return view('post_view', ['post' => $post, 'isliked' => $isliked, 'notifications' => NotificationController::getAll()]);
     }
 
-    public function likeById($id) {
+    public function likeById($id)
+    {
 
-# find if user liked post
+        # find if user liked post
 
-    $find = Likes::where([
-        ['post_id', $id],
-        ['user_id', Auth::user()['id']]
-    ])->count();
+        $find = Likes::where([
+            ['post_id', $id],
+            ['user_id', Auth::user()['id']]
+        ])->count();
 
-       if($find !== 0){
-           return null;
-       }
+        if ($find !== 0) {
+            return null;
+        }
         $likes = Posts::select('likes')
-        ->where('id', $id)->get();
+            ->where('id', $id)->get();
         $likes = $likes[0]['likes'];
 
-        $update = Posts::where('id', $id)->
-        update(['likes' => $likes + 1]);
+        $update = Posts::where('id', $id)->update(['likes' => $likes + 1]);
 
         $addToTable = new Likes();
 
@@ -105,36 +127,37 @@ class PostCotroller extends Controller
         return true;
     }
 
-    public function dislikeById($id) {
+    public function dislikeById($id)
+    {
 
         # find if user liked post
-            $find = Likes::where([
-                ['post_id', $id],
-                ['user_id', Auth::user()['id']]
-            ])->count();
+        $find = Likes::where([
+            ['post_id', $id],
+            ['user_id', Auth::user()['id']]
+        ])->count();
 
-               if($find == 0){
-                   return null;
-               }
+        if ($find == 0) {
+            return null;
+        }
 
-                $likes = Posts::select('likes')
-                ->where('id', $id)->get();
-                $likes = $likes[0]['likes'];
+        $likes = Posts::select('likes')
+            ->where('id', $id)->get();
+        $likes = $likes[0]['likes'];
 
-                $update = Posts::where('id', $id)->
-                update(['likes' => $likes - 1]);
+        $update = Posts::where('id', $id)->update(['likes' => $likes - 1]);
 
-                $delete = Likes::where([
-                    ['post_id','=', $id],
-                    ['user_id','=', Auth::user()['id']]
-                ]);
+        $delete = Likes::where([
+            ['post_id', '=', $id],
+            ['user_id', '=', Auth::user()['id']]
+        ]);
 
-                $delete->delete();
+        $delete->delete();
 
-                return $delete->count();
-            }
+        return $delete->count();
+    }
 
-    public function galleryPosts() {
-            return view('gallery', ['posts' => Posts::all()]);
+    public function galleryPosts()
+    {
+        return view('gallery', ['posts' => Posts::all(), 'notifications' => NotificationController::getAll()]);
     }
 }

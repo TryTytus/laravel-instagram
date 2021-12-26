@@ -24,7 +24,11 @@ class ChatsController extends Controller
             ->get();
         $all_users = User::where('id', '!=', $user->id)->get();
 
-        return view('messages', ['chats' => $last, 'user' => $user, 'all_users' => $all_users,]);
+        return view('messages', [
+            'chats' => $last, 'user' => $user,
+            'all_users' => $all_users,
+            'notifications' => NotificationController::getAll()
+        ]);
     }
 
     public function index($id)
@@ -38,35 +42,37 @@ class ChatsController extends Controller
             ->get();
 
         $this_chat = Chats::with('first_user', 'last_user')
-        ->where([
-            ['first_user_id','=', Auth::user()->id],
-            ['id', '=', $id]
-        ])->orWhere([
-            ['last_user_id','=', Auth::user()->id],
-            ['id', '=', $id]   
-        ])->first();
+            ->where([
+                ['first_user_id', '=', Auth::user()->id],
+                ['id', '=', $id]
+            ])->orWhere([
+                ['last_user_id', '=', Auth::user()->id],
+                ['id', '=', $id]
+            ])->first();
 
-        if(!$this_chat) {
+        if (!$this_chat) {
             return abort(403, 'Unauthorized action.');
         }
 
         $all_users = User::where('id', '!=', $user->id)->get();
 
         $messages = Messages::where('chat_id', '=', $id)->get();
-         return view(
-             'messages',
-               [
-            'messages' => $messages,
-            'chats' => $last,
-            'user' => $user,
-            'this_chat' => $this_chat,
-            'all_users' => $all_users,
-        ]);
+        return view(
+            'messages',
+            [
+                'messages' => $messages,
+                'chats' => $last,
+                'user' => $user,
+                'this_chat' => $this_chat,
+                'all_users' => $all_users,
+                'notifications' => NotificationController::getAll()
+            ]
+        );
     }
 
     public function createChat($id)
     {
-        if($id === Auth::user()->id){
+        if ($id === Auth::user()->id) {
             throw new HttpException(404, 'bad req');
         }
         try {
@@ -94,7 +100,8 @@ class ChatsController extends Controller
         }
     }
 
-    public function findByNick(string $nickname) {
+    public function findByNick(string $nickname)
+    {
         $to = User::where('nickname', $nickname)->first();
         return $this->createChat($to->id);
     }

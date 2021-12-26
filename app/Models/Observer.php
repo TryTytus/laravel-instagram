@@ -9,4 +9,13 @@ class Observer extends Model
 {
     public $timestamps = false;
     use HasFactory;
+
+    protected $fillable = [
+        'observer',
+        'observing'
+    ];
+
+    public function notifications() {
+        return $this->hasMany(Notification::class, 'user_id', 'observing');
+    }
 }

@@ -4,15 +4,20 @@
 @section('content')
 
 <main class="bg-gray-100 bg-opacity-25">
-
     <div class="lg:w-8/12 lg:mx-auto mb-8">
   
       <header class="flex flex-wrap items-center p-4 md:py-8">
   
         <div class="md:w-3/12 md:ml-16">
           <!-- profile image -->
-          <img class="w-20 h-20 md:w-40 md:h-40 object-cover rounded-full
-                       border-2 border-pink-600 p-1" src="https://images.unsplash.com/photo-1502791451862-7bd8c1df43a7?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=700&q=80" alt="profile">
+
+          @if ($profile->avatar)
+          <img id="blah" class="w-20 h-20 md:w-40 md:h-40 object-cover rounded-full
+          border-2 border-pink-600 p-1" src="/storage/{{$profile->avatar}}" alt="profile">
+          @else  
+          <img id="blah" class="w-20 h-20 md:w-40 md:h-40 object-cover rounded-full
+                       border-2 border-pink-600 p-1" src="/storage/avatar.jpg" alt="profile">
+          @endif
         </div>
   
         <!-- profile meta -->
@@ -28,11 +33,29 @@
               <i class="fas fa-check text-white text-xs absolute inset-x-0
                                  ml-1 mt-px"></i>
             </span>
-  
+          @if ($isme)
+            <form method="POST"  enctype="multipart/form-data" action="/changeavatar">
+              @csrf
+              <label class=" px-2 py-1 border bg-white
+              font-semibold text-sm rounded  text-center" for="imgInp">
+                  Zmień zdjęcie profilowe
+                <input id="imgInp" onchange="submit()" type="file" class="hidden" name="imgInp" required>
+              </label>
+
+              <button id="subm" class="bg-blue-500 px-2 py-1 hidden
+              text-white font-semibold text-sm rounded text-center mt-4 absolute"
+               type="submit">Potwierdź</button>
+            </form>
+          @else
             <!-- follow button -->
-            <a href="#" class="bg-blue-500 px-2 py-1 
-                          text-white font-semibold text-sm rounded block text-center 
-                          sm:inline-block block">Follow</a>
+            <button id="follow" class="bg-blue-500 px-2 py-1 hidden
+                          text-white font-semibold text-sm rounded text-center 
+                          ">Follow</button>
+            <!-- unfollow button -->
+            <button id="unfollow" class=" px-2 py-1 border hidden bg-white
+                         font-semibold text-sm rounded  text-center 
+                        ">Following</button>
+          @endif
           </div>
   
           <!-- post, following, followers list for medium screens -->
@@ -112,5 +135,39 @@
       </div>
     </div>
   </main>
+
+<script>
+  var id = {{ $profile->id }};
+  var isfollowing = {{ $isfollowing }};
+
+  $( window ).ready(() => {
+    if (isfollowing === 1) {
+      $('#unfollow').css('display', 'block');
+    } else {
+      $('#follow').css('display', 'block');
+    }
+  });
+
+   $('#follow').click(async () => {
+    await $.get(`/follow/${id}`);
+    $('#follow').css('display', 'none');
+    $('#unfollow').css('display', 'block');
+  });
+
+  $('#unfollow').click(async () => {
+    await $.get(`/unfollow/${id}`);
+    $('#follow').css('display', 'block');
+    $('#unfollow').css('display', 'none');
+  });
+
+  imgInp.onchange = evt => {
+  const [file] = imgInp.files
+  $('#subm').css('display','block');
+  if (file) {
+    blah.src = URL.createObjectURL(file)
+  }
+}
+
+</script>
 
   @endsection

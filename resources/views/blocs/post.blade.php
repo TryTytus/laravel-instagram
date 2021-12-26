@@ -18,7 +18,13 @@
     <div class="max-w-xl bg-white border rounded-sm">
         <div class="flex items-center px-4 py-3">
             <a href="/profile/{{ $post->nickname }}">
-                <img class="w-8 h-8 rounded-full" src="./storage/avatar.jpg" />
+                @if ($post->user->avatar)
+                <div class="w-8 h-8 rounded-full bg-cover" style="background-image: url('./storage/{{$post->user->avatar}}');">
+                </div>                    
+                @else
+                <div class="w-8 h-8 rounded-full bg-cover" style="background-image: url('./storage/avatar.jpg');">
+                </div>
+                @endif
             </a>
             <div class="ml-3 ">
                 <span class="block text-sm antialiased font-semibold leading-tight">

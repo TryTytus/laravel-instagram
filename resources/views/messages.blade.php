@@ -41,12 +41,22 @@
             <div class="flex items-center h-16 border-b border-gray-300 font-medium">
                 @if (isset($this_chat))
                     @if ($this_chat->first_user_id === $user->id)
+                        @if ($this_chat->last_user->avatar)
+                        <div class="ml-8 bg-cover rounded-full mr-3 w-10 h-10" style="
+                        background-image: url('/storage/{{$this_chat->last_user->avatar}}')" alt=""></div>
+                        @else
                         <img class="ml-8 mr-3 w-10 h-10" src="/storage/avatar.jpg" alt="">
+                        @endif
                         <p>
                             {{ $this_chat->last_user->name }}
                         </p>
                     @else
+                        @if ($this_chat->first_user->avatar)
+                        <div class="ml-8 bg-cover rounded-full mr-3 w-10 h-10" style="
+                        background-image: url('/storage/{{$this_chat->first_user->avatar}}')" alt=""></div>
+                        @else
                         <img class="ml-8 mr-3 w-10 h-10" src="/storage/avatar.jpg" alt="">
+                        @endif
                         <p>
                             {{ $this_chat->first_user->name }}
                         </p>

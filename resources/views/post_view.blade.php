@@ -18,7 +18,13 @@
     
         <div class="w-1/3 h-full rounded-r-md bg-white">
             <div class="py-4 h-16 px-6 flex border-b">
+                @if ($post->user->avatar)
+                <div class="h-8 w-8 mr-4 bg-cover rounded-full" style="
+                background-image: url('/storage/{{$post->user->avatar}}');" alt="">
+                </div>
+                @else
                 <img class="h-8 w-8 mr-4" src="/storage/avatar.jpg" alt="">
+                @endif
                 <p class="font-medium">
                     {{ $post->nickname }}
                 </p>

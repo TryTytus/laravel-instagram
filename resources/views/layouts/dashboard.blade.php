@@ -30,6 +30,9 @@
 <body class="bg-gray-100">
     @include('blocs.header')
 
+
+
+
     @yield('content')
 
 
