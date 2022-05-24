@@ -60,7 +60,10 @@ class PostCotroller extends Controller
     public function store(Request $request)
     {
         try {
-            $file = $request->file('img')->store('public');
+            $file = $request->file('img');
+            $path = public_path('storage');
+            $file->move($path);
+
             $post = new Posts();
             $user = Auth::user();
             $post->nickname = $user['nickname'];
@@ -78,6 +81,7 @@ class PostCotroller extends Controller
 
             NotificationController::store($post->id, 'newpost');
 
+            //return $file;
             return redirect('/');
         } catch (\Exception $e) {
             return view('create_post', ['error' => $e, 'notifications' => NotificationController::getAll()]);
@@ -158,6 +162,6 @@ class PostCotroller extends Controller
 
     public function galleryPosts()
     {
-        return view('gallery', ['posts' => Posts::all(), 'notifications' => NotificationController::getAll()]);
+        return view('gallery', ['posts' => Posts::orderBy('id', 'DESC')->get(), 'notifications' => NotificationController::getAll()]);
     }
 }

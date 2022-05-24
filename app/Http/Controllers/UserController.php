@@ -11,7 +11,10 @@ class UserController extends Controller
     public function changeAvatar(Request $req)
     {
         try {
-            $file = $req->file('imgInp')->store('public');
+            $file = $req->file('imgInp');
+            $path = public_path('storage');
+            $file->move($path);
+
             $user_id = Auth::user()->id;
             $user = User::find($user_id);
             $user->avatar = pathinfo($file)['basename'];

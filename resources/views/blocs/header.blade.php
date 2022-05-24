@@ -2,7 +2,6 @@
     <nav class="grid items-center justify-around md:w-2/3 grid-flow-col grid-cols-3 m-auto  h-14">
         <a href="/">
             <div class="flex items-center h-full">
-                <?xml version="1.0" encoding="UTF-8"?>
                 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="120px"
                     height="43px" viewBox="0 0 120 43" version="1.1">
                     <g id="surface1">

@@ -11,6 +11,9 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Models\Posts;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 
@@ -132,5 +135,35 @@ Route::get(
 
 Route::post('changeavatar', [UserController::class, 'changeAvatar']
 )->middleware(['auth']);
+
+
+Route::get('generate', function (){
+    return \Illuminate\Support\Facades\Artisan::call('storage:link');
+});
+
+Route::get('/foo', function () {
+    return Artisan::call('storage:link');
+});
+
+
+Route::get('/cos', function() {
+    return 'cos';
+});
+
+
+Route::get('/test', function () {
+    return Posts::select()->addSelect(DB::raw("
+    (
+        CASE WHEN posts.id IN(
+        SELECT DISTINCT
+            i.id
+        FROM
+            posts AS i
+        INNER JOIN likes ON i.id = likes.post_id AND likes.user_id = " . Auth::user()->id . "
+    ) THEN TRUE ELSE FALSE
+    END
+    ) AS isliked
+    "))->with('user')->orderBy('id', 'desc')->get();
+})->middleware(['auth']);
 
 require __DIR__ . '/auth.php';
